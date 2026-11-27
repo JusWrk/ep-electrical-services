@@ -6,3 +6,7 @@
 @media print{body>*{display:none!important}body>dialog[open]{display:block!important;position:static;max-height:none;width:100%;border:0;padding:0}dialog .quote-top button,.quote-actions button{display:none}dialog::backdrop{display:none}dialog input{border:0;padding:0}dialog .grand-total strong{font-size:2rem}dialog{font-size:12pt}}
 
 #service-photo{margin:0 0 22px;display:flex;align-items:end;gap:14px}#service-photo-image{width:190px;aspect-ratio:1;border-radius:14px;background-image:url('assets/service-photos.jpg');background-size:300% 200%;border:1px solid var(--line);flex:none}#service-photo figcaption{font-size:.76rem;color:var(--muted);padding-bottom:6px}@media(max-width:440px){#service-photo-image{width:150px}}
+
+.quote-routing{padding:18px 0;border-bottom:1px solid var(--line)}.quote-routing h3{font-size:1rem;margin:0 0 10px}.quote-routing p{margin:6px 0;font-size:.92rem}.quote-routing small{color:var(--muted)}
+
+#service-photo-image{object-fit:cover;height:auto;background:none}.product-photo{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:9px}.product{gap:12px}.scope-reset{margin-top:0!important;margin-bottom:8px}.start-over{display:block;text-decoration:underline;margin:0 0 18px auto;min-height:32px}.estimate .section-heading{margin-bottom:15px}
