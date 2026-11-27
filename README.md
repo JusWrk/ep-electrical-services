@@ -31,3 +31,7 @@ Start over and the WebNest Studios link sit at the right-hand side of the logo h
 Branding uses the refreshed teal circuit-J Juswrk logo and “Getting you connected” tagline, without an establishment year.
 
 The splash now uses the supplied montage of actual Juswrk installations. All fuseboard totals include an additional £20 per protected circuit for testing and certification.
+
+Quotations have separate Save PDF and Print controls. Share PDF / Gmail uses the device share sheet when supported; otherwise it downloads the PDF and opens a draft addressed to 4siteonline@gmail.com. The user must attach the PDF and send the email. No email is sent automatically. PDF generation uses bundled pdf-lib (MIT) without a CDN.
+
+Accept quotation requires a customer name and valid email address, then prepares an email to 4siteonline@gmail.com containing the selected work, total and share link. The customer is added in CC so both parties receive the acceptance message. PDF attachments must be added manually in Gmail. The customer must send the email; opening a draft is not recorded as an acceptance or booking.

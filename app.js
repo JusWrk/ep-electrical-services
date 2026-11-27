@@ -1,3 +1,4 @@
+import { buildQuotePdf } from './quote-pdf.js';
 import { data } from './data.js';
 import { example, validState, itemDetails, calculate, routeMix, money } from './model.js';
 const $ = id => document.getElementById(id);
@@ -53,8 +54,8 @@ function fittingList() {
 }
 function renderSelection() {
   const board=service==='boards', quoteOnly=['cable','cctv'].includes(service);
-  $('service-photo').hidden=board;
-  const photo=servicePhotos[service==='sockets'?(selected==='2'?'white':'metal'):service];
+  $('service-photo').hidden=!quoteOnly;
+  const photo=quoteOnly?servicePhotos[service]:null;
   if(photo) {
     $('service-photo-image').src=photo.src;
     $('service-photo-image').alt=photo.label;
@@ -151,6 +152,7 @@ $('share').addEventListener('click',async()=>{
 });
 function quoteLine(name,basis,price) { const row=element('div',undefined,'quote-item'),description=element('div',name);if(basis)description.append(element('small',basis));row.append(description,element('strong',money(price)));$('quote-content').append(row); }
 $('view-quote').addEventListener('click',()=>{
+  $('quote-status').textContent='';
   const result=calculate(state);$('quote-content').replaceChildren(element('p',`${data.travel[state.location].name} · ${state.area} · ${new Date().toLocaleDateString('en-GB')}`));
   state.cart.forEach(item=>{const d=itemDetails(item);quoteLine(`${item.qty} × ${d.name}`,d.basis,d.total);});
   const activeRoutes=routeMix(result.routeLines);
@@ -177,5 +179,62 @@ $('view-quote').addEventListener('click',()=>{
   const total=element('div',undefined,'grand-total');total.append(element('span','Estimated total'),element('strong',money(result.total)));$('quote-content').append(total);$('quotation').showModal();
 });
 $('close-quote').addEventListener('click',()=>$('quotation').close());$('print-quote').addEventListener('click',()=>window.print());
+$('accept-quote').addEventListener('click',()=>{
+  const name=$('customer-name').value.trim(),contact=$('customer-contact').value.trim();
+  if(!name||!contact){$('quote-status').textContent='Add your name and email address before accepting.';(!name?$('customer-name'):$('customer-contact')).focus();return;}
+  if(!$('customer-contact').checkValidity()){$('customer-contact').reportValidity();return;}
+  const reference=$('reference').value.trim();
+  const body=[
+    'QUOTATION ACCEPTANCE REQUEST',
+    'I would like to proceed with the electrical work below, subject to site survey and final confirmation.',
+    '',`Customer: ${name}`,`Customer email (copied): ${contact}`,`Reference: ${reference||'Not provided'}`,
+    `Date: ${new Date().toLocaleString('en-GB')}`,'',
+    ...Array.from($('quote-content').children,child=>child.innerText),
+    '',$('quotation').querySelector('.scope').textContent,
+    '',`Project link: ${location.href.split('#')[0]}#project=${encodeURIComponent(JSON.stringify(state))}`,
+  ].join('\n');
+  $('quote-status').textContent='Your acceptance email is ready. Tap Send in Gmail or your email app. The message is addressed to Juswrk with your email in CC so you both receive a copy. Attach your saved PDF if needed. It has not been sent yet.';
+  window.location.href=`mailto:4siteonline@gmail.com?cc=${encodeURIComponent(contact)}&subject=${encodeURIComponent('Juswrk quotation acceptance'+(reference?' - '+reference:''))}&body=${encodeURIComponent(body)}`;
+});
+async function quotationFile() {
+  const quote={
+    customer:$('customer-name').value.trim(),contact:$('customer-contact').value.trim(),reference:$('reference').value.trim(),
+    blocks:Array.from($('quote-content').children,child=>child.innerText),
+    scope:$('quotation').querySelector('.scope').textContent,
+  };
+  const response=await fetch('assets/juswrk-logo.png');
+  if(!response.ok)throw new Error('Logo could not be loaded');
+  const bytes=await buildQuotePdf(globalThis.PDFLib,quote,await response.arrayBuffer());
+  const reference=quote.reference.replace(/[^a-z0-9_-]/gi,'-').slice(0,60);
+  return new File([bytes],`Juswrk-quotation-${reference||new Date().toISOString().slice(0,10)}.pdf`,{type:'application/pdf'});
+}
+function downloadQuotation(file) {
+  const url=URL.createObjectURL(file),link=document.createElement('a');
+  link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+$('save-quote').addEventListener('click',async()=>{
+  const button=$('save-quote');button.disabled=true;
+  try{downloadQuotation(await quotationFile());$('quote-status').textContent='PDF download started. You can attach it in Gmail and send a copy to 4siteonline@gmail.com.';}
+  catch{$('quote-status').textContent='The PDF could not be created. Please try again or use Print and choose Save as PDF.';}
+  finally{button.disabled=false;}
+});
+$('email-quote').addEventListener('click',async()=>{
+  const button=$('email-quote');button.disabled=true;
+  try{
+    const file=await quotationFile();
+    if(navigator.canShare?.({files:[file]})){
+      await navigator.share({files:[file],title:'Juswrk quotation',text:'Please send a copy of this quotation to 4siteonline@gmail.com.'});
+      $('quote-status').textContent='PDF shared. Send the message in Gmail to email your copy.';
+    } else {
+      downloadQuotation(file);
+      $('quote-status').textContent='PDF download started. Attach this file to the prepared email before sending. Nothing has been sent automatically.';
+      const subject=encodeURIComponent('Juswrk quotation'+($('reference').value.trim()?' - '+$('reference').value.trim():''));
+      const body=encodeURIComponent('Please find the Juswrk quotation attached.\n\nAttach the saved PDF before sending.');
+      window.location.href=`mailto:4siteonline@gmail.com?subject=${subject}&body=${body}`;
+    }
+  }catch(error){if(error.name!=='AbortError')$('quote-status').textContent='Sharing is not available here. Use Save PDF, then attach it in Gmail and send it to 4siteonline@gmail.com.';}
+  finally{button.disabled=false;}
+});
 window.addEventListener('hashchange',()=>{readLink();renderSelection();syncInputs();renderRoutes();renderEstimate();});
 renderSelection();syncInputs();renderRoutes();renderEstimate();
