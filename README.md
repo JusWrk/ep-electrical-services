@@ -29,3 +29,5 @@ Every fitting has its own JPG file, assets/item-02.jpg through assets/item-33.jp
 Start over and the WebNest Studios link sit at the right-hand side of the logo header. Start over resets the entire project. A full-width splash photograph beneath the header reuses the Juswrk homepage project image with a teal overlay.
 
 Branding uses the refreshed teal circuit-J Juswrk logo and “Getting you connected” tagline, without an establishment year.
+
+The splash now uses the supplied montage of actual Juswrk installations. All fuseboard totals include an additional £20 per protected circuit for testing and certification.

@@ -8,7 +8,7 @@ export function validState(s) {
 export function itemDetails(item) {
   if (item.type === 'board') {
     const board = data.boards.find(b => b.ways === item.ways);
-    return { name: `${board.ways}-way RCBO fuseboard`, basis: 'Supplied & installed', rate: board.price, total: board.price * item.qty };
+    return { name: `${board.ways}-way RCBO fuseboard`, basis: 'Supply, installation, testing & certification included', rate: board.price, total: board.price * item.qty };
   }
   const fitting = data.fixed.find(f => f.id === item.id);
   return { name: fitting.name, basis: `${item.supply === 'supply' ? 'Juswrk supplied' : 'Customer supplied'}${['2','3'].includes(item.id) ? ` · ${item.mode === 'new' ? 'New position' : 'Front replacement'}` : ''}`, rate: fitting[item.supply], total: fitting[item.supply] * item.qty };

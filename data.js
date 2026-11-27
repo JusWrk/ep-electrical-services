@@ -253,75 +253,111 @@ export const data = {
   "boards": [
     {
       "ways": 4,
-      "price": 474.0
+      "price": 554.0,
+      "basePrice": 474.0,
+      "testingCertification": 80
     },
     {
       "ways": 5,
-      "price": 540.0
+      "price": 640.0,
+      "basePrice": 540.0,
+      "testingCertification": 100
     },
     {
       "ways": 6,
-      "price": 574.0
+      "price": 694.0,
+      "basePrice": 574.0,
+      "testingCertification": 120
     },
     {
       "ways": 7,
-      "price": 624.0
+      "price": 764.0,
+      "basePrice": 624.0,
+      "testingCertification": 140
     },
     {
       "ways": 8,
-      "price": 674.0
+      "price": 834.0,
+      "basePrice": 674.0,
+      "testingCertification": 160
     },
     {
       "ways": 9,
-      "price": 724.0
+      "price": 904.0,
+      "basePrice": 724.0,
+      "testingCertification": 180
     },
     {
       "ways": 10,
-      "price": 774.0
+      "price": 974.0,
+      "basePrice": 774.0,
+      "testingCertification": 200
     },
     {
       "ways": 11,
-      "price": 824.0
+      "price": 1044.0,
+      "basePrice": 824.0,
+      "testingCertification": 220
     },
     {
       "ways": 12,
-      "price": 874.0
+      "price": 1114.0,
+      "basePrice": 874.0,
+      "testingCertification": 240
     },
     {
       "ways": 13,
-      "price": 949.0
+      "price": 1209.0,
+      "basePrice": 949.0,
+      "testingCertification": 260
     },
     {
       "ways": 14,
-      "price": 1024.0
+      "price": 1304.0,
+      "basePrice": 1024.0,
+      "testingCertification": 280
     },
     {
       "ways": 15,
-      "price": 1099.0
+      "price": 1399.0,
+      "basePrice": 1099.0,
+      "testingCertification": 300
     },
     {
       "ways": 16,
-      "price": 1160.0
+      "price": 1480.0,
+      "basePrice": 1160.0,
+      "testingCertification": 320
     },
     {
       "ways": 17,
-      "price": 1330.0
+      "price": 1670.0,
+      "basePrice": 1330.0,
+      "testingCertification": 340
     },
     {
       "ways": 18,
-      "price": 1440.0
+      "price": 1800.0,
+      "basePrice": 1440.0,
+      "testingCertification": 360
     },
     {
       "ways": 19,
-      "price": 1550.0
+      "price": 1930.0,
+      "basePrice": 1550.0,
+      "testingCertification": 380
     },
     {
       "ways": 20,
-      "price": 1660.0
+      "price": 2060.0,
+      "basePrice": 1660.0,
+      "testingCertification": 400
     },
     {
       "ways": 21,
-      "price": 1770.0
+      "price": 2190.0,
+      "basePrice": 1770.0,
+      "testingCertification": 420
     }
   ],
   "areas": [
