@@ -26,4 +26,4 @@ Service overview images are individual JPG files selected by servicePhotos in ap
 
 Every fitting has its own JPG file, assets/item-02.jpg through assets/item-33.jpg. Product variants use shared illustrative photography initially, stored as independent files so each can be replaced individually. The product IDs and labels are in data.js. The service overview uses these same individual images. Cable supply and CCTV have separate JPG files.
 
-Reset scope clears work, routes and extra allowances while retaining location selections. Start over clears the entire project.
+A large teal Start over button sits above the service buttons at the far right and resets the entire project.

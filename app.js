@@ -143,11 +143,6 @@ $('add-route').addEventListener('click',()=>{if(state.routes.length>=30){notice(
 $('location').addEventListener('change',()=>{state.location=Number($('location').value);renderEstimate();});$('area').addEventListener('change',()=>{state.area=$('area').value;});
 $('material-mode').addEventListener('change',()=>{state.materials=$('material-mode').value;renderEstimate();});
 for(const [id,key,max] of [['cable-rate','cableRate',100000],['allowance','allowance',100000],['extras','extras',100000],['testing','testing',100000],['vat','vat',100]])$(id).addEventListener('input',()=>{state[key]=bounded($(id),0,max);renderEstimate();});
-$('reset-scope').addEventListener('click',()=>{
-  state.cart=[];state.routes=[];state.allowance=0;state.cableRate=0;state.extras=0;state.testing=0;
-  isExample=false;history.replaceState(null,'',location.pathname+location.search);
-  syncInputs();renderRoutes();renderEstimate();notice('Scope cleared. Your location details have been kept.');
-});
 $('reset').addEventListener('click',()=>{state={...example(),cart:[],routes:[],location:0,materials:'included',cableRate:0,allowance:0,extras:0,testing:0,vat:0};isExample=false;history.replaceState(null,'',location.pathname+location.search);syncInputs();renderRoutes();renderEstimate();notice('Ready for a new project.');});
 $('share').addEventListener('click',async()=>{
   const url=new URL(location.href);url.hash='project='+encodeURIComponent(JSON.stringify(state));
