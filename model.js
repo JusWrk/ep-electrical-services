@@ -20,7 +20,7 @@ export function calculate(s) {
   const routing = routeLines.reduce((sum,r) => sum + r.total,0);
   const metres = routeLines.reduce((sum,r) => sum + r.metres,0);
   const cableMetres = routeLines.reduce((sum,r) => sum + r.metres*r.cables,0) + s.allowance;
-  const cable = s.materials === 'extra' ? cableMetres*s.cableRate : 0;
+  const cable = s.materials === 'extra' ? s.cableRate : 0;
   const active = s.cart.length > 0 || metres > 0 || s.extras > 0 || s.testing > 0;
   const travel = active ? data.travel[s.location].price : 0;
   const subtotal = fittings + routing + cable + travel + s.extras + s.testing;

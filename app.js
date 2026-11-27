@@ -1,6 +1,14 @@
 import { data } from './data.js';
 import { example, validState, itemDetails, calculate, money } from './model.js';
 const $ = id => document.getElementById(id);
+const servicePhotos = {
+  white: {x:'0%',y:'0%',label:'White socket installation'},
+  metal: {x:'50%',y:'0%',label:'Metal-finish socket installation'},
+  lights: {x:'100%',y:'0%',label:'Lighting and ventilation'},
+  showers: {x:'0%',y:'100%',label:'Electric shower installation'},
+  cable: {x:'50%',y:'100%',label:'Electrical cable supply'},
+  cctv: {x:'100%',y:'100%',label:'CCTV installation'},
+};
 const categories = [ ['sockets','Sockets'], ['boards','Fuseboards'], ['lights','Lighting & fans'], ['showers','Showers'], ['cable','Cable supply'], ['cctv','CCTV'] ];
 let state = example();
 let service = 'sockets', selected = '3', mode = 'new', boardSize = 12;
@@ -44,6 +52,12 @@ function fittingList() {
 }
 function renderSelection() {
   const board=service==='boards', quoteOnly=['cable','cctv'].includes(service);
+  $('service-photo').hidden=board;
+  const photo=servicePhotos[service==='sockets'?(selected==='2'?'white':'metal'):service];
+  if(photo) {
+    $('service-photo-image').style.backgroundPosition=photo.x+' '+photo.y;
+    $('service-photo-image').setAttribute('aria-label',photo.label);
+  }
   for(const button of $('services').children)button.setAttribute('aria-pressed',String(button.dataset.service===service));
   $('socket-mode').hidden=service!=='sockets';$('product-grid').hidden=board||quoteOnly;
   $('board-config').hidden=!board;$('fitting-config').hidden=board||quoteOnly;$('add-item').hidden=quoteOnly;$('selection-price').hidden=quoteOnly;$('quote-only').hidden=!quoteOnly;
@@ -59,7 +73,7 @@ function renderSelection() {
   if(board) {
     for(const b of $('board-sizes').children)b.setAttribute('aria-pressed',String(Number(b.dataset.ways)===boardSize));
     $('prev-board').disabled=boardSize===4;$('next-board').disabled=boardSize===15;
-    $('board-poster').src=`assets/${boardSize}-way.webp`;$('poster-link').href=`assets/${boardSize}-way.webp`;
+    $('board-poster').src=`assets/${boardSize}-way.jpg`;$('poster-link').href=`assets/${boardSize}-way.jpg`;
     $('board-poster').alt=`Juswrk ${boardSize}-way fuseboard replacement advert`;$('board-name').textContent=`${boardSize} protected circuits`;
   } else {
     $('product-grid').replaceChildren();
@@ -85,7 +99,7 @@ function renderRoutes() {
     count.addEventListener('input',()=>{route.cables=bounded(count,1,100,true);renderEstimate();});countLabel.append(count);
     fields.append(methodLabel,lengthLabel,countLabel);
     const bottom=element('div',undefined,'route-bottom'),rate=data.routes.find(r=>r.id===route.id).rate;
-    bottom.append(element('span',`${money(rate)} / metre`));
+    bottom.append(element('span','Included in the combined installation price'));
     const remove=element('button','Remove section','remove');remove.type='button';remove.addEventListener('click',()=>{state.routes.splice(index,1);renderRoutes();renderEstimate();});bottom.append(remove);row.append(fields,bottom);$('routes').append(row);
   });
 }
@@ -100,7 +114,7 @@ function renderEstimate() {
     const remove=element('button','Remove','remove');remove.type='button';remove.setAttribute('aria-label',`Remove ${detail.name}`);remove.addEventListener('click',()=>{state.cart.splice(index,1);isExample=false;renderEstimate();});row.append(remove);$('cart').append(row);
   });
   $('breakdown').replaceChildren();costLine($('breakdown'),'Shared route installation',result.routing);
-  if(state.materials==='extra')costLine($('breakdown'),`Cable materials · ${result.cableMetres} m`,result.cable);
+  if(state.materials==='extra')costLine($('breakdown'),'Cable materials allowance',result.cable);
   costLine($('breakdown'),'Travel',result.travel);
   if(state.extras)costLine($('breakdown'),'Other agreed work',state.extras);
   if(state.testing)costLine($('breakdown'),'Additional testing',state.testing);
@@ -137,8 +151,8 @@ function quoteLine(name,basis,price) { const row=element('div',undefined,'quote-
 $('view-quote').addEventListener('click',()=>{
   const result=calculate(state);$('quote-content').replaceChildren(element('p',`${data.travel[state.location].name} · ${state.area} · ${new Date().toLocaleDateString('en-GB')}`));
   state.cart.forEach(item=>{const d=itemDetails(item);quoteLine(`${item.qty} × ${d.name}`,d.basis,d.total);});
-  result.routeLines.forEach(r=>quoteLine(r.name,`${r.metres} m × ${money(r.rate)}/m`,r.total));
-  if(result.cable)quoteLine('Cable materials',`${result.cableMetres} m`,result.cable);
+  if(result.routing)quoteLine('Routing & installation',`${result.metres} m combined route`,result.routing);
+  if(result.cable)quoteLine('Cable materials allowance','',result.cable);
   if(result.travel)quoteLine('Travel','',result.travel);
   if(state.extras)quoteLine('Other agreed work','',state.extras);
   if(state.testing)quoteLine('Additional testing','',state.testing);
