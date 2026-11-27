@@ -26,4 +26,6 @@ Service overview images are individual JPG files selected by servicePhotos in ap
 
 Every fitting has its own JPG file, assets/item-02.jpg through assets/item-33.jpg. Product variants use shared illustrative photography initially, stored as independent files so each can be replaced individually. The product IDs and labels are in data.js. The service overview uses these same individual images. Cable supply and CCTV have separate JPG files.
 
-A large teal Start over button sits above the service buttons at the far right and resets the entire project.
+Start over and the WebNest Studios link sit at the right-hand side of the logo header. Start over resets the entire project. A full-width splash photograph beneath the header reuses the Juswrk homepage project image with a teal overlay.
+
+Branding uses the refreshed teal circuit-J Juswrk logo and “Getting you connected” tagline, without an establishment year.
