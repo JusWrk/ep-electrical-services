@@ -1,6 +1,6 @@
 # Juswrk Electrical Services
 
-A static, white-and-teal installation selector with large service buttons, multiple shared cable-route sections, live price breakdowns, printable quotations and matching fuseboard adverts for 4–15 ways.
+A static, white-and-teal installation selector with large service buttons, multiple shared cable-route sections, live price breakdowns, printable quotations and matching fuseboard adverts for 4–21 ways.
 
 ## Publish on GitHub Pages
 
@@ -35,3 +35,7 @@ The splash now uses the supplied montage of actual Juswrk installations. All fus
 Quotations have separate Save PDF and Print controls. Share PDF / Gmail uses the device share sheet when supported; otherwise it downloads the PDF and opens a draft addressed to 4siteonline@gmail.com. The user must attach the PDF and send the email. No email is sent automatically. PDF generation uses bundled pdf-lib (MIT) without a CDN.
 
 Accept quotation requires a customer name and valid email address, then prepares an email to 4siteonline@gmail.com containing the selected work, total and share link. The customer is added in CC so both parties receive the acceptance message. PDF attachments must be added manually in Gmail. The customer must send the email; opening a draft is not recorded as an acceptance or booking.
+
+Lighting is organised into Wall, Ceiling, Security (with PIR) and Flood (without PIR). Fans is a separate service. Existing fitting prices are unchanged. Decorative wall lights are customer-supplied only, at £15 installation per fitting plus any cable routing. The smart switching add-on stays available under Lighting controls.
+
+Fuseboard choices now extend to 21 ways, using the existing matrix totals including testing and certification. All 18 sizes have a matching JPG advert.

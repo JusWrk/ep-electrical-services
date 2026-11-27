@@ -128,61 +128,61 @@ export const data = {
     },
     {
       "id": "23",
-      "name": "security light swap 10w",
+      "name": "Floodlight replacement 10W",
       "supply": 45.0,
       "customer": 35.0
     },
     {
       "id": "24",
-      "name": "security light swap 20w",
+      "name": "Floodlight replacement 20W",
       "supply": 55.0,
       "customer": 35.0
     },
     {
       "id": "25",
-      "name": "security light swap 30w",
+      "name": "Floodlight replacement 30W",
       "supply": 65.0,
       "customer": 35.0
     },
     {
       "id": "26",
-      "name": "security light swap 50w",
+      "name": "Floodlight replacement 50W",
       "supply": 75.0,
       "customer": 35.0
     },
     {
       "id": "27",
-      "name": "security light swap 100w",
+      "name": "Floodlight replacement 100W",
       "supply": 85.0,
       "customer": 35.0
     },
     {
       "id": "28",
-      "name": "security light swap 10w with PIR Detector",
+      "name": "Security light replacement 10W with PIR",
       "supply": 55.0,
       "customer": 35.0
     },
     {
       "id": "29",
-      "name": "security light swap 20w with PIR Detector",
+      "name": "Security light replacement 20W with PIR",
       "supply": 65.0,
       "customer": 35.0
     },
     {
       "id": "30",
-      "name": "security light swap 30w with PIR Detector",
+      "name": "Security light replacement 30W with PIR",
       "supply": 75.0,
       "customer": 35.0
     },
     {
       "id": "31",
-      "name": "security light swap 50w with PIR Detector",
+      "name": "Security light replacement 50W with PIR",
       "supply": 75.0,
       "customer": 35.0
     },
     {
       "id": "32",
-      "name": "security light swap 100w with PIR Detector",
+      "name": "Security light replacement 100W with PIR",
       "supply": 100.0,
       "customer": 35.0
     },
@@ -191,6 +191,13 @@ export const data = {
       "name": "web enabled light switching add on",
       "supply": 40.0,
       "customer": 40.0
+    },
+    {
+      "id": "34",
+      "name": "Decorative wall light installation",
+      "supply": null,
+      "customer": 15,
+      "customerOnly": true
     }
   ],
   "routes": [

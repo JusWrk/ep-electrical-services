@@ -1,5 +1,6 @@
+import { lightingGroups, fanItems, lightingItemIds } from './lighting.js?v=20261127-lighting-v2';
 import { buildQuotePdf } from './quote-pdf.js';
-import { data } from './data.js';
+import { data } from './data.js?v=20261127-lighting-v2';
 import { example, validState, itemDetails, calculate, routeMix, money } from './model.js';
 const $ = id => document.getElementById(id);
 const servicePhotos = {
@@ -11,17 +12,19 @@ const servicePhotos = {
   cable: {src:'assets/cable-supply.jpg',label:'Electrical cable supply'},
   cctv: {src:'assets/cctv.jpg',label:'CCTV installation'},
 };
-const categories = [ ['sockets','Sockets'], ['boards','Fuseboards'], ['lights','Lighting & fans'], ['showers','Showers'], ['cookers','Cookers'], ['cable','Cable supply'], ['cctv','CCTV'] ];
+const categories = [ ['sockets','Sockets'], ['boards','Fuseboards'], ['lights','Lighting'], ['fans','Fans'], ['showers','Showers'], ['cookers','Cookers'], ['cable','Cable supply'], ['cctv','CCTV'] ];
 let state = example();
 let service = 'sockets', selected = '2', mode = 'replace', boardSize = 12;
 let isExample = true;
+let lightingGroup = 'ceiling';
+let supplyPreference = 'supply';
 function element(tag, text, className) { const el = document.createElement(tag); if(text !== undefined) el.textContent=text; if(className) el.className=className; return el; }
 function option(value,text) { const el=element('option',text); el.value=value; return el; }
 function notice(text) { $('feedback').textContent=text; }
 function readLink() {
   if (!location.hash.startsWith('#project=')) {
     const legacy = location.hash.slice(1).split('/');
-    if (legacy[0] === 'fuseboards' && Number(legacy[1]) >= 4 && Number(legacy[1]) <= 15) {
+    if (legacy[0] === 'fuseboards' && Number(legacy[1]) >= 4 && Number(legacy[1]) <= 21) {
       boardSize = Number(legacy[1]); service = 'boards';
       state = {...example(), cart: [{type:'board', ways:boardSize, qty:1}], routes:[], location:0};
       isExample = false;
@@ -35,25 +38,46 @@ function readLink() {
     state=parsed;isExample=false;
     const board = state.cart.find(item => item.type === 'board');
     if(board) { service='boards'; boardSize=board.ways; }
+    else {
+      const fitting=state.cart.find(item=>item.type==='fitting');
+      if(fitting&&fanItems.includes(fitting.id)){service='fans';selected=fitting.id;}
+      else if(fitting){const group=lightingGroups.find(group=>group.items.includes(fitting.id));if(group||fitting.id==='33'){service='lights';lightingGroup=group?.id||'ceiling';selected=fitting.id;}}
+    }
   } catch { notice('This project link could not be read. The example project is shown.'); }
 }
 readLink();
 for(const [id,name] of categories) {
   const button=element('button',name);button.type='button';button.dataset.service=id;
-  button.addEventListener('click',()=>{service=id;selected=id==='showers'?'5':id==='lights'?'4':id==='cookers'?'21':'2';renderSelection();});
+  button.addEventListener('click',()=>{service=id;selected=id==='showers'?'5':id==='lights'?(lightingItemIds(lightingGroup)[0]||'4'):id==='fans'?'14':id==='cookers'?'21':'2';renderSelection();});
   $('services').append(button);
+}
+for(const group of lightingGroups) {
+  const button=element('button',group.name);button.type='button';button.dataset.lighting=group.id;
+  button.addEventListener('click',()=>{lightingGroup=group.id;selected=lightingItemIds(group.id)[0]||'4';renderSelection();});
+  $('lighting-categories').append(button);
 }
 for(const [i,t] of data.travel.entries()) $('location').append(option(i,t.name));
 for(const area of data.areas) $('area').append(option(area,area));
-for(let n=4;n<=15;n++) {
+for(let n=4;n<=21;n++) {
   const button=element('button',`${n}-way`);button.type='button';button.dataset.ways=n;
   button.addEventListener('click',()=>{boardSize=n;renderSelection();});$('board-sizes').append(button);
 }
 function fittingList() {
-  return data.fixed.filter(f=>service==='sockets'?['2','3'].includes(f.id):service==='showers'?Number(f.id)>=5&&Number(f.id)<=13:service==='cookers'?['21','22'].includes(f.id):service==='lights'?(f.id==='4'||Number(f.id)>=14&&Number(f.id)<=20||Number(f.id)>=23):false);
+  if(service==='lights')return lightingItemIds(lightingGroup).map(id=>data.fixed.find(item=>item.id===id)).filter(Boolean);
+  return data.fixed.filter(f=>service==='sockets'?['2','3'].includes(f.id):service==='showers'?Number(f.id)>=5&&Number(f.id)<=13:service==='cookers'?['21','22'].includes(f.id):service==='lights'?lightingItemIds(lightingGroup).includes(f.id):service==='fans'?fanItems.includes(f.id):false);
 }
 function renderSelection() {
-  const board=service==='boards', quoteOnly=['cable','cctv'].includes(service);
+  const board=service==='boards', wallQuote=service==='lights'&&lightingGroup==='wall'&&!lightingItemIds('wall').length, quoteOnly=['cable','cctv'].includes(service)||wallQuote;
+  const lighting=service==='lights';
+  $('lighting-categories').hidden=!lighting;
+  $('lighting-note').hidden=!lighting;
+  $('lighting-note').textContent=lighting?lightingGroups.find(group=>group.id===lightingGroup).note:'';
+  for(const button of $('lighting-categories').children)button.setAttribute('aria-pressed',String(button.dataset.lighting===lightingGroup));
+  if(!board&&!quoteOnly&&!fittingList().some(item=>item.id===selected))selected=fittingList()[0].id;
+  const customerOnly=data.fixed.find(item=>item.id===selected)?.customerOnly&&!board&&!quoteOnly;
+  $('supply').disabled=!!customerOnly;
+  $('supply').options[0].disabled=!!customerOnly;
+  $('supply').value=customerOnly?'customer':supplyPreference;
   $('service-photo').hidden=!quoteOnly;
   const photo=quoteOnly?servicePhotos[service]:null;
   if(photo) {
@@ -64,25 +88,28 @@ function renderSelection() {
   $('socket-mode').hidden=service!=='sockets';$('product-grid').hidden=board||quoteOnly;
   $('board-config').hidden=!board;$('fitting-config').hidden=board||quoteOnly;$('add-item').hidden=quoteOnly;$('selection-price').hidden=quoteOnly;$('quote-only').hidden=!quoteOnly;
   $('service-kicker').textContent=categories.find(c=>c[0]===service)[1].toUpperCase();
-  $('select-title').textContent=board?'Choose your fuseboard':quoteOnly?'Tell us what you need':'Choose your fittings';
+  $('select-title').textContent=board?'Choose your fuseboard':wallQuote?'Wall lighting':quoteOnly?'Tell us what you need':service==='fans'?'Choose your fan':lighting?`Choose your ${lightingGroups.find(group=>group.id===lightingGroup).name.toLowerCase()} lighting`:'Choose your fittings';
   document.querySelector('.section-heading .pill').hidden=quoteOnly;
-  for(const b of $('socket-mode').children)b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
+  document.querySelector('.section-heading .pill').textContent=customerOnly?'Installation only · customer supplied':'Supply & installation';
+  for(const b of $('socket-mode').querySelectorAll('[data-mode]'))b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
   if(quoteOnly) {
-    $('quote-service').textContent=service==='cable'?'Cable supply':'CCTV installation';
-    $('quote-service-copy').textContent=service==='cable'?'Tell us the cable type, size and length you need. Call for a supply quote.':'Tell us the areas you want covered and whether you already have a system. Call for a tailored quote.';
+    $('quote-service').textContent=wallQuote?'Wall light installation':service==='cable'?'Cable supply':'CCTV installation';
+    $('quote-service-copy').textContent=wallQuote?'You supply the decorative wall lights. Installation is £15 per fitting, with cable routing added separately.':service==='cable'?'Tell us the cable type, size and length you need. Call for a supply quote.':'Tell us the areas you want covered and whether you already have a system. Call for a tailored quote.';
     return;
   }
   if(board) {
     for(const b of $('board-sizes').children)b.setAttribute('aria-pressed',String(Number(b.dataset.ways)===boardSize));
-    $('prev-board').disabled=boardSize===4;$('next-board').disabled=boardSize===15;
+    $('prev-board').disabled=boardSize===4;$('next-board').disabled=boardSize===21;
     $('board-poster').src=`assets/${boardSize}-way.jpg`;$('poster-link').href=`assets/${boardSize}-way.jpg`;
     $('board-poster').alt=`Juswrk ${boardSize}-way fuseboard replacement advert`;$('board-name').textContent=`${boardSize} protected circuits`;
   } else {
     $('product-grid').replaceChildren();
     for(const f of fittingList()) {
+      if(lighting&&f.id==='33')$('product-grid').append(element('h3','Lighting controls','lighting-control-heading'));
       const button=element('button',undefined,'product');button.type='button';button.setAttribute('aria-pressed',String(f.id===selected));
       const image=element('img',undefined,'product-photo');image.src=`assets/item-${f.id.padStart(2,'0')}.jpg`;image.alt='';image.loading='lazy';image.width=512;image.height=512;
-      button.append(image,element('span',f.id==='2'?'Standard white socket':f.id==='3'?'Metal-finish socket':f.name),element('span',money(f[$('supply').value]),'product-price'));
+      button.append(image,element('span',f.id==='2'?'Standard white socket':f.id==='3'?'Metal-finish socket':f.name),element('span',money(f[f.customerOnly?'customer':$('supply').value]),'product-price'));
+      if(f.customerOnly)button.append(element('small','Illustrative fitting · you supply the light','muted'));
       button.addEventListener('click',()=>{selected=f.id;renderSelection();});$('product-grid').append(button);
     }
   }
@@ -132,9 +159,9 @@ function syncInputs() {
   for(const [id,key] of [['cable-rate','cableRate'],['allowance','allowance'],['extras','extras'],['testing','testing'],['vat','vat']])$(id).value=state[key];
 }
 $('socket-mode').addEventListener('click',event=>{const button=event.target.closest('[data-mode]');if(button){mode=button.dataset.mode;renderSelection();}});
-$('supply').addEventListener('change',renderSelection);$('quantity').addEventListener('change',()=>{$('quantity').value=bounded($('quantity'),1,100,true);renderSelection();});
+$('supply').addEventListener('change',()=>{supplyPreference=$('supply').value;renderSelection();});$('quantity').addEventListener('change',()=>{$('quantity').value=bounded($('quantity'),1,100,true);renderSelection();});
 for(const [id,step] of [['less',-1],['more',1]])$(id).addEventListener('click',()=>{$('quantity').value=Math.min(100,Math.max(1,Number($('quantity').value)+step));renderSelection();});
-$('prev-board').addEventListener('click',()=>{boardSize=Math.max(4,boardSize-1);renderSelection();});$('next-board').addEventListener('click',()=>{boardSize=Math.min(15,boardSize+1);renderSelection();});
+$('prev-board').addEventListener('click',()=>{boardSize=Math.max(4,boardSize-1);renderSelection();});$('next-board').addEventListener('click',()=>{boardSize=Math.min(21,boardSize+1);renderSelection();});
 $('add-item').addEventListener('click',()=>{
   const item=service==='boards'?{type:'board',ways:boardSize,qty:1}:{type:'fitting',id:selected,supply:$('supply').value,qty:bounded($('quantity'),1,100,true),mode};
   if(state.cart.length>=50){notice('Your project has reached 50 item lines.');return;}
