@@ -10,9 +10,9 @@ Use an HTTP server to preview locally. JavaScript modules require HTTP rather th
 
 ## Pricing
 
-Rates are in `data.js`, extracted from ElecTrix(2).ods. The 5-way price is £540, matching that matrix and the updated advert. Fitting quantities multiply fitting rates. Each route section's length multiplies its installation rate once. Cable count affects the reported cable quantity only. Travel is charged once. Cable materials are initially included in job pricing, as a visible test assumption. The optional separate materials field adds a flat agreed allowance. Additional testing, other work and VAT initially add zero and can be edited.
+Rates are in `data.js`, extracted from ElecTrix(2).ods. Board totals include the £20-per-circuit allowance for testing and certification. Fitting quantities multiply fitting rates. Each route section's length multiplies its installation rate once. Cable count affects the reported cable quantity only. Travel is charged once. Cable materials are initially included in job pricing, as a visible test assumption. The optional separate materials field adds a flat agreed allowance. Additional testing, other work and VAT initially add zero and can be edited.
 
-The starting example is one white socket-front replacement in Ellesmere Port, with no new cable route. Its total is £25. Replace existing appears first and is selected by default. New-position sockets use the matrix's per-fitting allowance plus the shared routing cost. Cable supply and CCTV are enquiry-only until rates are supplied. The selector records the work area and estimates price; it does not choose cable sizes or establish circuit suitability.
+Fresh visits start with an empty project in Ellesmere Port and a total of £0. Replace existing appears first and is selected by default. New-position sockets use the matrix's per-fitting allowance plus the shared routing cost. Cable supply and CCTV are enquiry-only until rates are supplied. The selector records the work area and estimates price; it does not choose cable sizes or establish circuit suitability.
 
 ## Share and quote
 
@@ -24,7 +24,7 @@ The small hexagonal W is a provisional WebNest footer mark.
 
 Service overview images are individual JPG files selected by servicePhotos in app.js. Route controls display a combined installation price without metre rates. Quotations list each route method as a percentage of the combined measured route, grouped by method and rounded to total 100%, as included work, with routing cost included in the overall project total. Rates used for the calculation remain in data.js.
 
-Every fitting has its own JPG file, assets/item-02.jpg through assets/item-33.jpg. Product variants use shared illustrative photography initially, stored as independent files so each can be replaced individually. The product IDs and labels are in data.js. The service overview uses these same individual images. Cable supply and CCTV have separate JPG files.
+Every fitting has its own JPG file, assets/item-02.jpg through assets/item-36.jpg. Product variants use shared illustrative photography initially, stored as independent files so each can be replaced individually. The product IDs and labels are in data.js. Cable supply and CCTV have separate JPG files.
 
 Start over and the WebNest Studios link sit at the right-hand side of the logo header. Start over resets the entire project. A full-width splash photograph beneath the header reuses the Juswrk homepage project image with a teal overlay.
 
@@ -39,3 +39,9 @@ Accept quotation requires a customer name and valid email address, then prepares
 Lighting is organised into Wall, Ceiling, Security (with PIR) and Flood (without PIR). Fans is a separate service. Existing fitting prices are unchanged. Decorative wall lights are customer-supplied only, at £15 installation per fitting plus any cable routing. The smart switching add-on stays available under Lighting controls.
 
 Fuseboard choices now extend to 21 ways, using the existing matrix totals including testing and certification. All 18 sizes have a matching JPG advert.
+
+Fresh visits start with an empty project at £0; explicit shared project links restore their selected work. Pick your requirement now includes single and double socket fronts. Automation is available as its own service and as an optional £40 add-on per named lighting group; repeated fittings in the same named group do not add the automation charge again. Requested switch type and switch locations are recorded with the lighting group; switching prices await confirmation and are excluded from the estimate.
+
+The top header shows a teal phone icon next to the clickable phone number. WebNest credit remains in the footer and quotations.
+
+The cable route builder is hidden while Fuseboards is selected. Other services retain routing, and route sections already added to a mixed project are preserved.

@@ -2,13 +2,13 @@ export const data = {
   "fixed": [
     {
       "id": "2",
-      "name": "socket front white",
+      "name": "White double socket",
       "supply": 25.0,
       "customer": 25.0
     },
     {
       "id": "3",
-      "name": "metal finish",
+      "name": "Metal-finish double socket",
       "supply": 35.0,
       "customer": 25.0
     },
@@ -188,7 +188,7 @@ export const data = {
     },
     {
       "id": "33",
-      "name": "web enabled light switching add on",
+      "name": "Lighting automation add-on",
       "supply": 40.0,
       "customer": 40.0
     },
@@ -198,6 +198,18 @@ export const data = {
       "supply": null,
       "customer": 15,
       "customerOnly": true
+    },
+    {
+      "id": "35",
+      "name": "White single socket",
+      "supply": 25,
+      "customer": 25
+    },
+    {
+      "id": "36",
+      "name": "Metal-finish single socket",
+      "supply": 35,
+      "customer": 25
     }
   ],
   "routes": [

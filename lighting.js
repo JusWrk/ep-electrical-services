@@ -7,5 +7,5 @@ export const lightingGroups = [
 export const fanItems = ['14','15','16','17','18','19','20'];
 export function lightingItemIds(group){
   const category=lightingGroups.find(item=>item.id===group);
-  return category?.items.length?[...category.items,'33']:[];
+  return category?.items.length?[...category.items]:[];
 }

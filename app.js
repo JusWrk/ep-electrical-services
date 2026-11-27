@@ -1,21 +1,22 @@
-import { lightingGroups, fanItems, lightingItemIds } from './lighting.js?v=20261127-lighting-v2';
+import {socketIds,isLightingItem,securityLightIds,addProjectSelection,removeProjectSelection} from './project-options.js?v=20261127-controls-v1';
+import { lightingGroups, fanItems, lightingItemIds } from './lighting.js?v=20261127-controls-v1';
 import { buildQuotePdf } from './quote-pdf.js';
-import { data } from './data.js?v=20261127-lighting-v2';
-import { example, validState, itemDetails, calculate, routeMix, money } from './model.js';
+import { data } from './data.js?v=20261127-controls-v1';
+import { example, validState, itemDetails, calculate, routeMix, money } from './model.js?v=20261127-controls-v1';
 const $ = id => document.getElementById(id);
 const servicePhotos = {
   white: {src:'assets/item-02.jpg',label:'White socket installation'},
   metal: {src:'assets/item-03.jpg',label:'Metal-finish socket installation'},
-  lights: {src:'assets/item-04.jpg',label:'Lighting and ventilation'},
+  lights: {src:'assets/item-04-white-pendant.jpg',label:'Lighting and ventilation'},
   showers: {src:'assets/item-05.jpg',label:'Electric shower installation'},
   cookers: {src:'assets/item-22.jpg',label:'Electric cooker connection'},
   cable: {src:'assets/cable-supply.jpg',label:'Electrical cable supply'},
   cctv: {src:'assets/cctv.jpg',label:'CCTV installation'},
 };
-const categories = [ ['sockets','Sockets'], ['boards','Fuseboards'], ['lights','Lighting'], ['fans','Fans'], ['showers','Showers'], ['cookers','Cookers'], ['cable','Cable supply'], ['cctv','CCTV'] ];
+const categories = [ ['sockets','Sockets'], ['boards','Fuseboards'], ['lights','Lighting'], ['automation','Automation'], ['fans','Fans'], ['showers','Showers'], ['cookers','Cookers'], ['cable','Cable supply'], ['cctv','CCTV'] ];
 let state = example();
 let service = 'sockets', selected = '2', mode = 'replace', boardSize = 12;
-let isExample = true;
+let isExample = false;
 let lightingGroup = 'ceiling';
 let supplyPreference = 'supply';
 function element(tag, text, className) { const el = document.createElement(tag); if(text !== undefined) el.textContent=text; if(className) el.className=className; return el; }
@@ -40,15 +41,17 @@ function readLink() {
     if(board) { service='boards'; boardSize=board.ways; }
     else {
       const fitting=state.cart.find(item=>item.type==='fitting');
-      if(fitting&&fanItems.includes(fitting.id)){service='fans';selected=fitting.id;}
+      if(fitting&&socketIds.includes(fitting.id)){service='sockets';selected=fitting.id;mode=fitting.mode;supplyPreference=fitting.supply;}
+      else if(fitting&&fanItems.includes(fitting.id)){service='fans';selected=fitting.id;}
+      else if(fitting&&fitting.id==='33'){service='automation';selected='33';}
       else if(fitting){const group=lightingGroups.find(group=>group.items.includes(fitting.id));if(group||fitting.id==='33'){service='lights';lightingGroup=group?.id||'ceiling';selected=fitting.id;}}
     }
-  } catch { notice('This project link could not be read. The example project is shown.'); }
+  } catch { notice('This project link could not be read. An empty project is shown.'); }
 }
 readLink();
 for(const [id,name] of categories) {
   const button=element('button',name);button.type='button';button.dataset.service=id;
-  button.addEventListener('click',()=>{service=id;selected=id==='showers'?'5':id==='lights'?(lightingItemIds(lightingGroup)[0]||'4'):id==='fans'?'14':id==='cookers'?'21':'2';renderSelection();});
+  button.addEventListener('click',()=>{if(id==='automation'&&service!==id)$('quantity').value='1';service=id;selected=id==='showers'?'5':id==='lights'?(lightingItemIds(lightingGroup)[0]||'4'):id==='fans'?'14':id==='automation'?'33':id==='cookers'?'21':'2';renderSelection();});
   $('services').append(button);
 }
 for(const group of lightingGroups) {
@@ -64,11 +67,18 @@ for(let n=4;n<=21;n++) {
 }
 function fittingList() {
   if(service==='lights')return lightingItemIds(lightingGroup).map(id=>data.fixed.find(item=>item.id===id)).filter(Boolean);
-  return data.fixed.filter(f=>service==='sockets'?['2','3'].includes(f.id):service==='showers'?Number(f.id)>=5&&Number(f.id)<=13:service==='cookers'?['21','22'].includes(f.id):service==='lights'?lightingItemIds(lightingGroup).includes(f.id):service==='fans'?fanItems.includes(f.id):false);
+  return data.fixed.filter(f=>service==='sockets'?socketIds.includes(f.id):service==='showers'?Number(f.id)>=5&&Number(f.id)<=13:service==='cookers'?['21','22'].includes(f.id):service==='lights'?lightingItemIds(lightingGroup).includes(f.id):service==='fans'?fanItems.includes(f.id):service==='automation'?f.id==='33':false);
 }
 function renderSelection() {
   const board=service==='boards', wallQuote=service==='lights'&&lightingGroup==='wall'&&!lightingItemIds('wall').length, quoteOnly=['cable','cctv'].includes(service)||wallQuote;
+  $('route-panel').hidden=board;
   const lighting=service==='lights';
+  $('lighting-group-config').hidden=!(lighting||service==='automation');
+  $('automation-choice').hidden=!lighting;
+  $('switch-choice').hidden=!lighting;
+  $('switch-fields').hidden=!lighting||!$('light-switches').checked;
+  $('quantity-label').textContent=service==='automation'?'Groups or clusters':'Quantity';
+  $('supply').closest('label').hidden=service==='automation';
   $('lighting-categories').hidden=!lighting;
   $('lighting-note').hidden=!lighting;
   $('lighting-note').textContent=lighting?lightingGroups.find(group=>group.id===lightingGroup).note:'';
@@ -88,9 +98,9 @@ function renderSelection() {
   $('socket-mode').hidden=service!=='sockets';$('product-grid').hidden=board||quoteOnly;
   $('board-config').hidden=!board;$('fitting-config').hidden=board||quoteOnly;$('add-item').hidden=quoteOnly;$('selection-price').hidden=quoteOnly;$('quote-only').hidden=!quoteOnly;
   $('service-kicker').textContent=categories.find(c=>c[0]===service)[1].toUpperCase();
-  $('select-title').textContent=board?'Choose your fuseboard':wallQuote?'Wall lighting':quoteOnly?'Tell us what you need':service==='fans'?'Choose your fan':lighting?`Choose your ${lightingGroups.find(group=>group.id===lightingGroup).name.toLowerCase()} lighting`:'Choose your fittings';
+  $('select-title').textContent=board?'Choose your fuseboard':wallQuote?'Wall lighting':quoteOnly?'Tell us what you need':service==='automation'?'Lighting automation':service==='fans'?'Choose your fan':lighting?`Choose your ${lightingGroups.find(group=>group.id===lightingGroup).name.toLowerCase()} lighting`:'Pick your requirement';
   document.querySelector('.section-heading .pill').hidden=quoteOnly;
-  document.querySelector('.section-heading .pill').textContent=customerOnly?'Installation only · customer supplied':'Supply & installation';
+  document.querySelector('.section-heading .pill').textContent=service==='automation'?'£40 per group or cluster':customerOnly?'Installation only · customer supplied':'Supply & installation';
   for(const b of $('socket-mode').querySelectorAll('[data-mode]'))b.setAttribute('aria-pressed',String(b.dataset.mode===mode));
   if(quoteOnly) {
     $('quote-service').textContent=wallQuote?'Wall light installation':service==='cable'?'Cable supply':'CCTV installation';
@@ -107,15 +117,26 @@ function renderSelection() {
     for(const f of fittingList()) {
       if(lighting&&f.id==='33')$('product-grid').append(element('h3','Lighting controls','lighting-control-heading'));
       const button=element('button',undefined,'product');button.type='button';button.setAttribute('aria-pressed',String(f.id===selected));
-      const image=element('img',undefined,'product-photo');image.src=`assets/item-${f.id.padStart(2,'0')}.jpg`;image.alt='';image.loading='lazy';image.width=512;image.height=512;
-      button.append(image,element('span',f.id==='2'?'Standard white socket':f.id==='3'?'Metal-finish socket':f.name),element('span',money(f[f.customerOnly?'customer':$('supply').value]),'product-price'));
+      const image=element('img',undefined,'product-photo');image.src=f.id==='4'?'assets/item-04-white-pendant.jpg':`assets/item-${f.id.padStart(2,'0')}.jpg`;image.alt='';image.loading='lazy';image.width=512;image.height=512;
+      button.append(image,element('span',f.name),element('span',money(f[f.customerOnly?'customer':$('supply').value]),'product-price'));
+      if(securityLightIds.includes(f.id))button.append(element('span','Automation add-on available for this product','automation-badge'));
       if(f.customerOnly)button.append(element('small','Illustrative fitting · you supply the light','muted'));
       button.addEventListener('click',()=>{selected=f.id;renderSelection();});$('product-grid').append(button);
     }
   }
-  const item=board?{type:'board',ways:boardSize,qty:1}:{type:'fitting',id:selected,supply:$('supply').value,qty:Number($('quantity').value)||1,mode};
-  const detail=itemDetails(item);$('selection-price').replaceChildren(element('span',board?'Package price':`${item.qty} ${item.qty===1?'fitting':'fittings'} · ${money(detail.rate)} each`),element('strong',money(detail.total)));
+  const item=selectionItem(),detail=itemDetails(item);
+  const auto=lighting&&$('light-automation').checked;
+  const namedGroup=$('light-group-name').value.trim().toLowerCase();
+  const existing=!!namedGroup&&state.cart.some(line=>line.id==='33'&&line.groupName?.trim().toLowerCase()===namedGroup);
+  const alreadyAutomated=service==='automation'&&existing;
+  $('add-item').disabled=alreadyAutomated;
+  const addedAutomation=auto&&!existing?40:0;
+  const label=alreadyAutomated?'Automation is already included for this group':board?'Package price':service==='automation'?`${item.qty} group${item.qty===1?'':'s'} · £40 each`:`${item.qty} ${item.qty===1?'fitting':'fittings'} · ${money(detail.rate)} each${auto?(existing?' · automation already in this group':' + £40 automation for this group'):''}`;
+  $('selection-price').replaceChildren(element('span',label),element('strong',money(alreadyAutomated?0:detail.total+addedAutomation)));
+
 }
+function selectionItem(){return service==='boards'?{type:'board',ways:boardSize,qty:1}:{type:'fitting',id:selected,supply:$('supply').value,qty:bounded($('quantity'),1,100,true),mode};}
+function groupOptions(){return {groupName:$('light-group-name').value.trim(),automation:$('light-automation').checked,switchesRequired:$('light-switches').checked,switchLocations:bounded($('switch-locations'),1,10,true),switchType:$('switch-type').value};}
 function renderRoutes() {
   $('routes').replaceChildren();
   state.routes.forEach((route,index)=>{
@@ -141,7 +162,7 @@ function renderEstimate() {
   state.cart.forEach((item,index)=>{
     const detail=itemDetails(item),row=element('div',undefined,'cart-item'),top=element('div',undefined,'cart-item-top');
     top.append(element('span',`${item.qty} × ${detail.name}`),element('strong',money(detail.total)));row.append(top,element('p',detail.basis));
-    const remove=element('button','Remove','remove');remove.type='button';remove.setAttribute('aria-label',`Remove ${detail.name}`);remove.addEventListener('click',()=>{state.cart.splice(index,1);isExample=false;renderEstimate();});row.append(remove);$('cart').append(row);
+    const remove=element('button','Remove','remove');remove.type='button';remove.setAttribute('aria-label',`Remove ${detail.name}`);remove.addEventListener('click',()=>{state.cart=removeProjectSelection(state.cart,index);isExample=false;renderEstimate();renderSelection();});row.append(remove);$('cart').append(row);
   });
   $('breakdown').replaceChildren();costLine($('breakdown'),'Shared route installation',result.routing);
   if(state.materials==='extra')costLine($('breakdown'),'Cable materials allowance',result.cable);
@@ -149,7 +170,7 @@ function renderEstimate() {
   if(state.extras)costLine($('breakdown'),'Other agreed work',state.extras);
   if(state.testing)costLine($('breakdown'),'Additional testing',state.testing);
   if(state.vat)costLine($('breakdown'),`VAT · ${state.vat}%`,result.vat);
-  $('grand-total').textContent=money(result.total);$('route-total').textContent=`${result.metres} m route · ${result.cableMetres} m cable`;
+  $('grand-total').textContent=money(result.total);$('grand-total').previousElementSibling.textContent=result.switchingPending?'Estimated total (excludes switching)':'Estimated total';$('switching-pending').hidden=!result.switchingPending;$('route-total').textContent=`${result.metres} m route · ${result.cableMetres} m cable`;
   $('empty-note').textContent=!result.active?'Add fittings or route sections to build your estimate.':'';
   $('view-quote').disabled=!result.active;$('share').disabled=!result.active;
   $('rate-label').hidden=state.materials!=='extra';
@@ -159,19 +180,21 @@ function syncInputs() {
   for(const [id,key] of [['cable-rate','cableRate'],['allowance','allowance'],['extras','extras'],['testing','testing'],['vat','vat']])$(id).value=state[key];
 }
 $('socket-mode').addEventListener('click',event=>{const button=event.target.closest('[data-mode]');if(button){mode=button.dataset.mode;renderSelection();}});
+for(const id of ['light-automation','light-switches','switch-type','switch-locations','light-group-name'])$(id).addEventListener(id==='light-group-name'?'input':'change',renderSelection);
 $('supply').addEventListener('change',()=>{supplyPreference=$('supply').value;renderSelection();});$('quantity').addEventListener('change',()=>{$('quantity').value=bounded($('quantity'),1,100,true);renderSelection();});
 for(const [id,step] of [['less',-1],['more',1]])$(id).addEventListener('click',()=>{$('quantity').value=Math.min(100,Math.max(1,Number($('quantity').value)+step));renderSelection();});
 $('prev-board').addEventListener('click',()=>{boardSize=Math.max(4,boardSize-1);renderSelection();});$('next-board').addEventListener('click',()=>{boardSize=Math.min(21,boardSize+1);renderSelection();});
 $('add-item').addEventListener('click',()=>{
-  const item=service==='boards'?{type:'board',ways:boardSize,qty:1}:{type:'fitting',id:selected,supply:$('supply').value,qty:bounded($('quantity'),1,100,true),mode};
-  if(state.cart.length>=50){notice('Your project has reached 50 item lines.');return;}
-  state.cart.push(item);isExample=false;renderEstimate();notice('Added to your project.');
+  const item=selectionItem(),next=service==='lights'||service==='automation'?addProjectSelection(state.cart,item,groupOptions()):[...state.cart,item];
+  if(next===state.cart){notice('Automation is already included for this group.');return;}
+  if(next.length>50){notice('Your project has reached 50 item lines.');return;}
+  state.cart=next;isExample=false;renderEstimate();renderSelection();notice('Added to your project.');
 });
 $('add-route').addEventListener('click',()=>{if(state.routes.length>=30){notice('Your project has reached 30 route sections.');return;}state.routes.push({id:'3',metres:0,cables:1});isExample=false;renderRoutes();renderEstimate();});
 $('location').addEventListener('change',()=>{state.location=Number($('location').value);renderEstimate();});$('area').addEventListener('change',()=>{state.area=$('area').value;});
 $('material-mode').addEventListener('change',()=>{state.materials=$('material-mode').value;renderEstimate();});
 for(const [id,key,max] of [['cable-rate','cableRate',100000],['allowance','allowance',100000],['extras','extras',100000],['testing','testing',100000],['vat','vat',100]])$(id).addEventListener('input',()=>{state[key]=bounded($(id),0,max);renderEstimate();});
-$('reset').addEventListener('click',()=>{state={...example(),cart:[],routes:[],location:0,materials:'included',cableRate:0,allowance:0,extras:0,testing:0,vat:0};isExample=false;history.replaceState(null,'',location.pathname+location.search);syncInputs();renderRoutes();renderEstimate();notice('Ready for a new project.');});
+$('reset').addEventListener('click',()=>{state={...example(),cart:[],routes:[],location:0,materials:'included',cableRate:0,allowance:0,extras:0,testing:0,vat:0};isExample=false;$('light-automation').checked=false;$('light-switches').checked=false;$('light-group-name').value='';$('switch-locations').value='1';$('quantity').value='1';history.replaceState(null,'',location.pathname+location.search);renderSelection();syncInputs();renderRoutes();renderEstimate();notice('Ready for a new project.');});
 $('share').addEventListener('click',async()=>{
   const url=new URL(location.href);url.hash='project='+encodeURIComponent(JSON.stringify(state));
   try { await navigator.clipboard.writeText(url.href);history.replaceState(null,'',url.href);notice('Project link copied. You can paste it into Facebook or a message.'); }
@@ -203,7 +226,7 @@ $('view-quote').addEventListener('click',()=>{
   if(state.extras)quoteLine('Other agreed work','',state.extras);
   if(state.testing)quoteLine('Additional testing','',state.testing);
   if(result.vat)quoteLine('VAT',`${state.vat}%`,result.vat);
-  const total=element('div',undefined,'grand-total');total.append(element('span','Estimated total'),element('strong',money(result.total)));$('quote-content').append(total);$('quotation').showModal();
+  const total=element('div',undefined,'grand-total');total.append(element('span',result.switchingPending?'Estimated total (excludes switching)':'Estimated total'),element('strong',money(result.total)));$('quote-content').append(total);$('quotation').showModal();
 });
 $('close-quote').addEventListener('click',()=>$('quotation').close());$('print-quote').addEventListener('click',()=>window.print());
 $('accept-quote').addEventListener('click',()=>{
